@@ -1,32 +1,11 @@
-# node-udev - list devices in system and detect changes on them
+# Modified version of node-udev
 
-This library attempts to follow the libudev where it makes sense. I only needed some usb input device detection so I was happy with quite few features.
+Original: https://github.com/cheery/node-udev
 
-Requires node-v0.8.0 and libudev.
+Just unified the event hooks to a single point...
+Also modified the subsystems for my requirements...
 
-## Installation
+All credit goes to Github-user cheery!
+https://github.com/cheery
 
-    npm install udev
 
-### Installation on debian/ubuntu
-
-    sudo apt-get install libudev-dev
-    npm install udev
-
-## How to Use
-
-    var udev = require("udev");
-
-    console.log(udev.list()); // this is a long list :)
-
-    var monitor = udev.monitor();
-    monitor.on('add', function (device) {
-        console.log('added ' + device);
-        monitor.close() // this closes the monitor.
-    });
-    monitor.on('remove', function (device) {
-        console.log('removed ' + device);
-    });
-    monitor.on('change', function (device) {
-        console.log('changed ' + device);
-    });

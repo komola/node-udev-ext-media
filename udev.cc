@@ -59,9 +59,18 @@ class Monitor : public node::ObjectWrap {
         Local<Value> emit_v = data->monitor->Get(String::NewSymbol("emit"));
         Local<Function> emit = Local<Function>::Cast(emit_v);
         Local<Value> emitArgs[2];
+
+		//Experimental: prevent own emits for ADD, REMOVE, CHANGE
+		/*
         emitArgs[0] = String::NewSymbol(udev_device_get_action(dev));
         emitArgs[1] = obj;
         emit->Call(data->monitor, 2, emitArgs);
+		*/
+		
+		//Experimental unified emit for all types
+		emitArgs[0] = String::NewSymbol("device_event");
+		emitArgs[1] = obj;
+		emit->Call(data->monitor, 2, emitArgs);
 
         udev_device_unref(dev);
         if (tc.HasCaught()) node::FatalException(tc);
@@ -71,7 +80,13 @@ class Monitor : public node::ObjectWrap {
         uv_poll_t* handle;
         Monitor* obj = new Monitor();
         obj->mon = udev_monitor_new_from_netlink(udev, "udev");
-        udev_monitor_enable_receiving(obj->mon);
+        
+		//Experimental: Adding type-matching for kernel filter
+		udev_monitor_filter_add_match_subsystem_devtype(obj->mon, "block", "partition");
+		udev_monitor_filter_add_match_subsystem_devtype(obj->mon, "block", "disk");
+		
+		udev_monitor_enable_receiving(obj->mon);
+		
         obj->fd = udev_monitor_get_fd(obj->mon);
         obj->poll_handle = handle = new uv_poll_t;
         obj->Wrap(args.This());
