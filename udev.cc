@@ -27,8 +27,7 @@ static const char* GetMediaType(struct udev_device* dev){
                     && id_model != NULL 
                     && strcmp(id_model, "SD_MMC") == 0;
 
-    bool isDVD = id_fs_type != NULL
-                    && id_type != NULL
+    bool isDVD = id_type != NULL
                     && strcmp(id_type, "cd") == 0;
 
     bool isUnknown = id_fs_type != NULL;
@@ -55,6 +54,46 @@ static const char* GetMediaType(struct udev_device* dev){
         return "unknown";
     }
     
+    return NULL;
+}
+
+static const char* ConvertChangeAction(struct udev_device* dev){
+    const char *action = udev_device_get_property_value(dev, "ACTION");
+
+    if(action == NULL){
+        return NULL;
+    }
+
+    //If action is add or remove, do nothing and return that action instead 
+    if(strcmp(action, "change") != 0){
+        return action;
+    }
+
+    //Otherwise try to convert the change either to add or remove
+    const char* media_type = GetMediaType(dev);
+
+    //If there is no media-type, then there is something totally wrong
+    if(media_type == NULL){
+        return NULL;
+    }
+
+    const char *id_fs_type = udev_device_get_property_value(dev, "ID_FS_TYPE");
+    const char *disk_eject_request = udev_device_get_property_value(dev, "DISK_EJECT_REQUEST");
+    
+
+    //DVD and change
+    if(strcmp(media_type, "dvd") == 0){
+        //Add
+        if(id_fs_type != NULL){
+            return "add";
+        }
+
+        //Remove
+        if(disk_eject_request != NULL && strcmp(disk_eject_request, "1") == 0){
+            return "remove";
+        }
+    }
+
     return NULL;
 }
 
@@ -120,28 +159,38 @@ class Monitor : public node::ObjectWrap {
         Monitor* wrapper = ObjectWrap::Unwrap<Monitor>(data->monitor);
         udev_device* dev = udev_monitor_receive_device(wrapper->mon);
 
-        Local<Object> obj = Object::New();
-        obj->Set(String::NewSymbol("syspath"), String::New(udev_device_get_syspath(dev)));
-        PushProperties(obj, dev);
+        const char *media_type = GetMediaType(dev);
 
         TryCatch tc;
-        Local<Value> emit_v = data->monitor->Get(String::NewSymbol("emit"));
-        Local<Function> emit = Local<Function>::Cast(emit_v);
-        Local<Value> emitArgs[2];
 
-        //TODO: Probably add some routines to transform values  
+        //Only emit if there is an actual device
+        if(media_type != NULL){
+            //Convert Change Actions correctly, also only emit, if there was an actual action
+            const char* action = ConvertChangeAction(dev);
+            if(action){
+                Local<Object> obj = Object::New();
+                obj->Set(String::NewSymbol("syspath"), String::New(udev_device_get_syspath(dev)));
+                PushProperties(obj, dev);
 
-		//Experimental: prevent own emits for ADD, REMOVE, CHANGE
-		/*
-        emitArgs[0] = String::NewSymbol(udev_device_get_action(dev));
-        emitArgs[1] = obj;
-        emit->Call(data->monitor, 2, emitArgs);
-		*/
-		
-		//Experimental unified emit for all types
-		emitArgs[0] = String::NewSymbol("device_event");
-		emitArgs[1] = obj;
-		emit->Call(data->monitor, 2, emitArgs);
+                Local<Value> emit_v = data->monitor->Get(String::NewSymbol("emit"));
+                Local<Function> emit = Local<Function>::Cast(emit_v);
+                Local<Value> emitArgs[2];
+
+                obj->Set(String::New("ACTION"), String::New(action));
+
+                //TODO: Probably add some additional routines to transform values  
+
+                //Emit add or remove event
+                emitArgs[0] = String::NewSymbol(action);
+                emitArgs[1] = obj;
+                emit->Call(data->monitor, 2, emitArgs);
+                
+                //Experimental unified emit for all types
+                //emitArgs[0] = String::NewSymbol("device_event");
+                //emitArgs[1] = obj;
+                //emit->Call(data->monitor, 2, emitArgs);
+            }
+        }
 
         udev_device_unref(dev);
         if (tc.HasCaught()) node::FatalException(tc);
