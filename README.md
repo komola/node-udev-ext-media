@@ -1,15 +1,13 @@
 # Node Module udev-ext-media 
 
-Derived Codebase (node-udev): 
-https://github.com/cheery/node-udev
-
-##What does this modification do differently to the original one?
 - This module is optimized to receive add / remove events of DVDs, USB-Storage- and SDCARD-Devices
 - Filters SATA-HDDs to prevent add / remove for installed harddrives (which contain OS data etc.)
 - Filters all devices which are not intended for external storage
 - List-Function lists only available DVDs, USB- and SDCARD-Devices 
 
-##Why did I make this?
+**Derived Codebase (node-udev):** 
+https://github.com/cheery/node-udev
+##For what Use-Case?
 I use this for a node application, which is intended to mount storage devices as
 soon as they get plugged in. On startup, there are no events so I also wanted to list all
 available devices. Since I don't consider my builtin HDD as an external storage,
@@ -22,7 +20,6 @@ DVD-Drives raise 2 events, although 1 event is important for the add-event)
 Feel free to use this module on your own demand.
 
 ##Installation
-
 This package is not featured in NPM, you have to add this file in your package.json
 file:
 
