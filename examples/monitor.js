@@ -1,6 +1,6 @@
 "use strict";
 
-var udev = require("../udev");
+var udev = require("../udev-ext-media");
 var fs = require("fs");
 
 var events = [];

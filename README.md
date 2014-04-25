@@ -1,6 +1,7 @@
-# Modified version of node-udev
+# Node Module udev-ext-media 
 
-Derived Codebase: https://github.com/cheery/node-udev
+Derived Codebase (node-udev): 
+https://github.com/cheery/node-udev
 
 ##What does this modification do differently to the original one?
 - This module is optimized to receive add / remove events of DVDs, USB-Storage- and SDCARD-Devices
@@ -43,7 +44,7 @@ After adding this dependency, just download by entering `npm install`
 ##Usage
 After installation, access the udev module
 ```javascript
-var udev = require("udev");
+var udev = require("udev-ext-media");
 
 var monitor = udev.monitor();
 
