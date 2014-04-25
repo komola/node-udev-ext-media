@@ -8,8 +8,11 @@
 using namespace v8;
 
 static struct udev *udev;
-
-static const char* GetMediaType(struct udev_device* dev){
+ 
+/**
+ * @param {Boolean} strict - True, only added DVDs will be recognized
+ */
+static const char* GetMediaType(struct udev_device* dev, bool strict=false){
     //Check if the device is probably an external storage device (but not SATA)
     const char *id_bus = udev_device_get_property_value(dev, "ID_BUS");
     const char *id_fs_type = udev_device_get_property_value(dev, "ID_FS_TYPE");
@@ -28,7 +31,8 @@ static const char* GetMediaType(struct udev_device* dev){
                     && strcmp(id_model, "SD_MMC") == 0;
 
     bool isDVD = id_type != NULL
-                    && strcmp(id_type, "cd") == 0;
+                    && strcmp(id_type, "cd") == 0
+                    && (strict ? id_fs_type != NULL : true);
 
     bool isUnknown = id_fs_type != NULL;
 
@@ -269,7 +273,8 @@ static Handle<Value> List(const Arguments& args) {
         path = udev_list_entry_get_name(entry);
         dev = udev_device_new_from_syspath(udev, path);
 
-        const char *media_type = GetMediaType(dev);
+        //Be strict and do not accept any dvds without id_fs_type
+        const char *media_type = GetMediaType(dev, true);
 
         //Only take non-sata devices
         if(media_type != NULL){

@@ -1,5 +1,5 @@
 {
-  "name": "udev",
+  "name": "udev-ext-media",
   "version": "0.1.0",
   "description": "Bindings to libudev, optimized for DVD, SDCARD and USB-Storage devices",
   "main": "udev.js",
@@ -18,9 +18,19 @@
     "udev",
     "linux"
   ],
-  "private" : true,
+  "private": true,
   "author": "Patrick Stapfer <p.stapfer@deadlock.at>",
   "license": "BSD",
   "gypfile": true,
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "mocha": "~1.18.2",
+    "chai": "~1.9.1",
+    "grunt": "~0.4.4",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-mocha-test": "~0.10.2",
+    "grunt-node-gyp": "~0.3.0",
+    "sinon": "~1.9.1",
+    "sinon-chai": "~2.5.0"
+  }
 }
