@@ -8,7 +8,7 @@ Derived Codebase: https://github.com/cheery/node-udev
 - Filters all devices which are not intended for external storage
 - List-Function lists only available DVDs, USB- and SDCARD-Devices 
 
-##For which reason did I make this?
+##Why did I make this?
 I use this for a node application, which is intended to mount storage devices as
 soon as they get plugged in. On startup, there are no events so I also wanted to list all
 available devices. Since I don't consider my builtin HDD as an external storage,
@@ -20,7 +20,42 @@ DVD-Drives raise 2 events, although 1 event is important for the add-event)
 
 Feel free to use this module on your own demand.
 
-##Testing
+##Installation
+
+This package is not featured in NPM, you have to add this file in your package.json
+file:
+
+**Part of package.json:**
+```
+{
+    "name" : "myproject",
+    "version" : "1.0",
+    ...
+    ...
+    "dependencies" : {
+        "udev-ext-media" : "git+ssh://git@github.com:magicpat/node-udev.git"
+    }
+}
+```
+
+After adding this dependency, just download by entering `npm install`
+
+##Usage
+After installation, access the udev module
+```javascript
+var udev = require("udev");
+
+var monitor = udev.monitor();
+
+//Device has member attributes as given by UDEV
+monitor.on("add", function(device){
+    console.log(device.MEDIA_TYPE); //Will output "usb", "dvd", "sdcard", else "unknown"  
+});
+```
+
+Check out the `examples` and `test` directory for more code examples.
+
+##Development
 For development, use GRUNT to run the mocha tests.
 Since these tests are targeted to connected hardware, insert various DVD,
 USB, SDCARD, HDD devices before starting the tests.
@@ -35,37 +70,6 @@ grunt test
 grunt watch:mocha
 ```
 Grunt will launch tests as soon as udev.cc, udev.js or any spec-files change
-
-
-##Installation
-
-This package is not featured in NPM, you have to add this file in your package.json
-file:
-
-**Part of package.json:**
-{
-    "name" : "myproject",
-    "version" : "1.0",
-    ...
-    ...
-    "dependencies" : {
-        "udev-ext-media" : "git+ssh://git@github.com:magicpat/node-udev.git"
-    }
-}
-
-After adding this dependency, just download by entering `npm install`
-
-##Usage
-```javascript
-var udev = require("udev");
-
-var monitor = udev.monitor();
-
-//Device has member attributes as given by UDEV
-monitor.on("add", function(device){
-    console.log(device.MEDIA_TYPE); //Will output "usb", "dvd", "sdcard", else "unknown"  
-});
-```
 
 ##Credit
 All credit for the essential base goes to Github-user cheery!
